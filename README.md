@@ -60,21 +60,21 @@ The easiest way for benchmarks in multiple machines is to copy all Pi.pem , Pi.k
 
 2. Compile the program to obtain the executable for each party:
    ```
-   ./aws-compile-parties-combo.sh
+   ./compile-parties.sh
    ```
 3. Run the program to obtain the results as:
     ```
-    ./aws-launch-parties-combp.sh
+    ./launch-parties.sh
     ```
 ### Running bench_fhe_naive
 
 1. Compile the program to obtain the executable for each party:
    ```
-   ./aws-compile-parties-combo-NAIVE.sh
+   ./compile-parties-comp.sh
    ```
 2. Run the program to obtain the results as:
     ```
-    ./aws-launch-parties-combO-NAIVE.sh
+    ./launch-parties-comp.sh
     ```       
    
 
