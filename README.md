@@ -1,5 +1,6 @@
 ```
 sudo apt-get install automake build-essential clang cmake git libboost-dev libboost-filesystem-dev libboost-iostreams-dev libboost-thread-dev libgmp-dev libntl-dev libsodium-dev libssl-dev libtool python3
+echo "MOD = -DGFP_MOD_SZ=5" >> CONFIG.mine
 make setup
 ./Scripts/setup-ssl.sh 10
 make -j8 sy-shamir-party.x
@@ -37,8 +38,8 @@ On Ubuntu, the following suffices:
 sudo apt-get install automake build-essential clang cmake git libboost-dev libboost-filesystem-dev libboost-iostreams-dev libboost-thread-dev libgmp-dev libntl-dev libsodium-dev libssl-dev libtool python3
 ```
 ### Simulating the WAN setting:
-We recomment having access to 10 different servers to simulate the communication. We assume the servers are called party0, party1, ..., party9 and that we have ssh access to them.
-   It is assumed that the SSH login is possible without password. This
+We recomment having access to 10 different machines to simulate the communication in a WAN setting. We assume the servers are called `party0, party1, ..., party9` and that we have `ssh` access to them.
+   It is also assumed that the SSH login is possible without password. This
    can be achieved using password-less SSH keys. See [this
    tutorial](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server)
    for more information.
@@ -46,9 +47,12 @@ If the benchmarks are run locally skip to 'Local Simulation'
 
 ### Running bench_fhe
 
-1.  Edit  `CONFIG.mine`:
-MOD = -DGFP_MOD_SZ=5
-Execute the following for the underlying setup and sharing mechanism:
+1.  Edit  `CONFIG.mine` to run for larger fields:
+```
+echo "MOD = -DGFP_MOD_SZ=5" >> CONFIG.mine
+```
+
+2. Execute the following for the underlying setup and sharing mechanism:
 
 ```
 make setup
@@ -56,13 +60,13 @@ make setup
 make -j8 sy-shamir-party.x
 ```
 Setup-ssl will create the necessary keys for each party. 
-The easiest way for benchmarks in multiple machines is to copy all Pi.pem , Pi.key to all parties.
+The easiest way for benchmarks in multiple machines is to copy all Pi.pem , Pi.key to all machines.
 
-2. Compile the program to obtain the executable for each party:
+3. Compile the program to obtain the executable for each party:
    ```
    ./compile-parties.sh
    ```
-3. Run the program to obtain the results as:
+4. Run the program to obtain the results as:
     ```
     ./launch-parties.sh
     ```
