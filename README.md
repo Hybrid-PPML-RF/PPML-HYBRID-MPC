@@ -1,3 +1,15 @@
+```
+sudo apt-get install automake build-essential clang cmake git libboost-dev libboost-filesystem-dev libboost-iostreams-dev libboost-thread-dev libgmp-dev libntl-dev libsodium-dev libssl-dev libtool python3
+make setup
+./Scripts/setup-ssl.sh 10
+make -j8 sy-shamir-party.x
+./compile-parties.sh
+./launch-parties.sh
+./compile-parties-comp.sh
+./launch-parties-comp.sh
+```
+
+## TLDR
 
 
 The main simulation code for our protocol is contained in Programs/Source/bench_fhe.py.
