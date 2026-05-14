@@ -1,14 +1,47 @@
+## Requirements
+- MP-SPDZ dependencies installed as:
 ```
 sudo apt-get install automake build-essential clang cmake git libboost-dev libboost-filesystem-dev libboost-iostreams-dev libboost-thread-dev libgmp-dev libntl-dev libsodium-dev libssl-dev libtool python3
+```
+- git clone project as:
+```
+git clone 
+https://github.com/linen101/PPML-HYBRID-MPC.git
+```
+- 10 Ubuntu machines with passwordless SSH, named party0..party9
+- prepare code to run for a large prime:
+```
 echo "MOD = -DGFP_MOD_SZ=5" >> CONFIG.mine
+```
+- setup MP-SPDZ and SSL connections for 10 parties
+```
 make setup
 ./Scripts/setup-ssl.sh 10
-make -j8 sy-shamir-party.x
-./compile-parties.sh
-./launch-parties.sh
-./compile-parties-comp.sh
-./launch-parties-comp.sh
 ```
+- project built at /home/ubuntu/PPML-MP-SPDZ (commit: <your git hash>)
+
+
+## File placement (on every party machine)
+  Programs/Source/bench_fhe.py
+  Programs/Source/random_matrix.py
+  Compiler/SC_fun.py
+  ip_parties.txt   (in the MP-SPDZ root)
+
+## Step 1 — Compile (run once from the orchestrator- your cmd)
+  bash compile_bench.sh
+
+## Step 2 — Run (run once from the orchestrator - your cmd)
+  bash run_bench.sh
+
+## Output
+  Logs per party in logs/party<i>-bench_fhe-<params>-<timestamp>.log
+  Look for "Time" lines in party0's log for wall-clock timings.
+
+## Parameters being swept
+  N (vector size) x C (classes) : (16,3), (32,3), (48,2), (64,10)
+  Depth: 4, 5, 6
+  Protocol: sy-shamir, 10 parties, 40-bit security, 282-bit prime
+
 
 ## TLDR
 
