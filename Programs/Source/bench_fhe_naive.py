@@ -6,7 +6,6 @@ import math
 from Compiler import types, library, instructions
 from Compiler import comparison, util, ml
 from Compiler.util import is_zero, tree_reduce
-from Programs.Source import random_matrix
 from Compiler import SC_fun
 
 program.set_security(40)
