@@ -17,6 +17,8 @@ program.set_bit_length(64)
 bit_length = program.bit_length
 print_ln("%s-bit_length", bit_length)
 
+#samples
+samples = 100
 
 # depth of the tree
 d=4
@@ -31,7 +33,7 @@ d3 = 400
 d4 = 800
 d5 = 0
 d6 = 0
-
+h = 800
 
 n_threads = 48
 
@@ -55,7 +57,6 @@ n = 15              # t = 3
 x=12600
 # n = 8 * \ceil[\sqrt(m)] 
 
-"""
 try:
     n = int(program.args[1])
 except:
@@ -71,9 +72,14 @@ try:
 except:
     pass
 
-print_ln("Compiled with n=%s, t=%s, d=%s", n, t, d)
-"""
+try:
+    samples = int(program.args[4])
+except:
+    pass
 
+print_ln("Compiled with n=%s, t=%s, d=%s", n, t, d)
+
+"""
 try:
     x = int(program.args[1])
 except:
@@ -84,12 +90,15 @@ try:
 except:
     pass
 
-
 print_ln("Compiled with x=%s, d=%s", x, d)
+"""
+
 if (d==5):
     d5 = 1600
+    h = 1600
 if (d==6):
     d6 = 3100
+    h = 3100
 
 def compute_gini(a,b,c,d,t):
     #c1 = sint(0)
@@ -103,17 +112,17 @@ def compute_gini(a,b,c,d,t):
     return gini
     
 def create_a_b():
-    a = types.sint.get_random_int(120, size=1)
-    b = types.sint.get_random_int(120, size=1)
+    a = types.sint.get_random_int(32, size=1)
+    b = types.sint.get_random_int(32, size=1)
     return (a,b)
 
 def create_val():
-    val = types.sint.get_random_int(120, size=1)
+    val = types.sint.get_random_int(32, size=1)
     val = val.square()
     return  MemValue(val)
 
-def create_a_values(size):
-    a = types.sint.get_random_int(120,size=size)
+def create_a_values(n):
+    a = types.sint.get_random_int(32,size=n)
     a = a.square()
     return a
 
@@ -135,9 +144,8 @@ def bench_max(a_values):
     idx = a_max.reveal()   
     return a_values[idx].reveal()
 
-"""
 a_array = sint.Array(n)
-a_values = create_a_values(size=n)  
+a_values = create_a_values(n)  
 a_array.assign(a_values)
 
 
@@ -174,12 +182,10 @@ def _(i):
     #def _(i):
     a_max = bench_argmax(a_array)               
 stop_timer(1)
-"""
 
 # benchmark computation of GINI index with G' formula of overleaf
 #(after FHE preprocessing: n as above )
 #(without FHE, TOTAL IN MPC, n as below) 
-"""
 a = create_val()
 b = create_val()
 c = create_val()
@@ -204,15 +210,53 @@ def _(i):
 def _(i):
     compute_gini(a,b,c,d,t)        
 stop_timer(2)
-"""
 
 
 a_array = sint.Array(t)
-a_values = create_a_values(size=t)  
+a_values = create_a_values(t)  
 a_array.assign(a_values)
 #label for the leaves
 start_timer(4)
-@for_range_opt_multithread(n_threads, 2**d)
+# benchmark the argmax 
+start_timer(1)
+@for_range_opt_multithread(n_threads, d1)
 def _(i):
-    bench_max(a_array)
+    #@for_range(l)
+    #def _(i):
+    a_max = bench_argmax(a_array)
+@for_range_opt_multithread(n_threads, d2)
+def _(i):
+    #@for_range(l)
+    #def _(i):
+    a_max = bench_argmax(a_array)
+@for_range_opt_multithread(n_threads, d3)
+def _(i):
+    #@for_range(l)
+    #def _(i):
+    a_max = bench_argmax(a_array)
+@for_range_opt_multithread(n_threads, d4)
+def _(i):
+    #@for_range(l)
+    #def _(i):
+    a_max = bench_argmax(a_array)  
+@for_range_opt_multithread(n_threads, d5)
+def _(i):
+    #@for_range(l)
+    #def _(i):
+    a_max = bench_argmax(a_array) 
+@for_range_opt_multithread(n_threads, d6)
+def _(i):
+    #@for_range(l)
+    #def _(i):
+    a_max = bench_argmax(a_array) 
 stop_timer(4)    
+
+a = create_val()
+b = create_val()
+T=h*100*(2*samples*n*t) # number of multiplications in the whole tree, for the given parameters, as a function of n, t, d, and samples. This is used for benchmarking the input integrity check.
+#input integrity
+start_timer(5)
+@for_range_opt_multithread(n_threads, T)
+def _(i):
+    c = a*b
+stop_timer(5)
