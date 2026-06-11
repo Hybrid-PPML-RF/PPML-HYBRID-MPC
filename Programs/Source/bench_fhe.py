@@ -33,11 +33,11 @@ bit_length = program.bit_length
 print_ln("%s-bit_length", bit_length)
 
 #default parameters for the benchmarks, which can be overwritten at compile time by passing arguments to the compiler
-n = 100 # number of samples
+n = 1 # number of samples
 m = 9   # number of attributes, needed for the computation of the number of possible split points
 alpha = 4 # number of possible attribute values, needed for the computation of the number of possible split points
 t = 3   # number of labels
-d = 4   # depth of the tree
+d = 1   # depth of the tree
 
 # argmax to be computed collaboratively between the servers
 # in parallel, on each tree level 
@@ -45,12 +45,11 @@ d = 4   # depth of the tree
     # then, on the first level d1 = 100 argmaxes can be computed independently, 
     # and on the second level d2=200 argmaxes in parallel, etc.. 
 d1 = 100
-d2 = 200 
-d3 = 400
-d4 = 800
+d2 = 0 
+d3 = 0
+d4 = 0
 d5 = 0
 d6 = 0
-h = 800
 n_threads = 4
 
 # n = 8 * \ceil[\sqrt(m)] 
@@ -87,11 +86,9 @@ print_ln("Compiled with n=%s, m=%s, alpha=%s, t=%s, d=%s", n, m, alpha, t, d)
 
 if (d==5):
     d5 = 1600
-    h = 1600
 if (d==6):
     d5 = 1600
     d6 = 3100
-    h = 3100
 
 def compute_gini(a,b,c,d,t):
     #c1 = sint(0)
@@ -215,6 +212,7 @@ def _(i):
     compute_gini(aval,bval,cval,dval,t)        
 stop_timer(2)
 
+#benchmark for input integrity
 (x,y) = create_a_b()
 tt = d*n*m*alpha + d*(n*m + t)*(alpha + 1) + d*n*m*t # number of multiplications in the whole tree, for the given parameters, as a function of n, t, d, and samples. This is used for benchmarking the input integrity check.
 #input integrity
@@ -223,3 +221,30 @@ start_timer(4)
 def _(i):
     z = x*y
 stop_timer(4)
+
+
+# benchmark input sharing
+# S = 2*(T*alpha*n*m) + 4*T*(2^d-1)*alpha*floor(sqrt(m))*t*n
+#       + T*(2^d-1)*n*t + T*(2^d-1)*alpha*floor(sqrt(m))*t
+T = 100  # number of parties*number of trees trained in parallel, which determines the number of inputs shared in parallel, and thus the number of iterations for the benchmark of input sharing. This is needed to set the number of iterations for the benchmark, which should be representative of the actual number of inputs shared in a real training scenario. The number of inputs shared depends on the number of parties, trees trained in parallel, samples, attributes, attribute values, labels, and depth of the tree. For example, for 10 parties training 10 trees in parallel, T=100; for 3 parties training 5 trees in parallel, T=15; etc..
+sqm = math.floor(math.sqrt(m))
+S1 = 2 * T * alpha * n * m
+S2 = 4 * T * (2**d - 1) * alpha * sqm * t * n
+S3 = T * (2**d - 1) * n * t
+S4 = T * (2**d - 1) * alpha * sqm * t
+S  = S1 + S2 + S3 + S4
+
+print_ln("Sharing benchmark: S1=%s, S2=%s, S3=%s, S4=%s, S_total=%s",
+         S1, S2, S3, S4, S)
+array_a = types.personal(0, Array(S, types.cfix))
+@for_range_opt(S)
+def _(i):
+    value = cint(42)
+    value_cfix =  types.cfix(value)
+    array_a[i] = value_cfix
+start_timer(5)
+@for_range_opt_multithread(n_threads, S)
+def _(i):
+    array_sa = sfix.Array(S)
+    array_sa[:] = sfix(array_a[:])
+stop_timer(5)
