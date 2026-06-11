@@ -14,14 +14,12 @@
 # ma = 136            # t = 10
 # ma = 202            # t = 2
 # ma = 2048           # t = 7
-import itertools
-import random
-import math
+
 #import numpy as np
-from Compiler import types, library, instructions
+import math
+from Compiler import types, library, instructions, mpc_math
 from Compiler import comparison, util, ml
 from Compiler.util import is_zero, tree_reduce
-from Compiler import SC_fun
 
 program.set_security(40)
 
@@ -211,40 +209,3 @@ def _(i):
 def _(i):
     compute_gini(aval,bval,cval,dval,t)        
 stop_timer(2)
-
-#benchmark for input integrity
-(x,y) = create_a_b()
-tt = d*n*m*alpha + d*(n*m + t)*(alpha + 1) + d*n*m*t # number of multiplications in the whole tree, for the given parameters, as a function of n, t, d, and samples. This is used for benchmarking the input integrity check.
-#input integrity
-start_timer(4)
-@for_range_opt_multithread(n_threads, tt)
-def _(i):
-    z = x*y
-stop_timer(4)
-
-
-# benchmark input sharing
-# S = 2*(T*alpha*n*m) + 4*T*(2^d-1)*alpha*floor(sqrt(m))*t*n
-#       + T*(2^d-1)*n*t + T*(2^d-1)*alpha*floor(sqrt(m))*t
-T = 100  # number of parties*number of trees trained in parallel, which determines the number of inputs shared in parallel, and thus the number of iterations for the benchmark of input sharing. This is needed to set the number of iterations for the benchmark, which should be representative of the actual number of inputs shared in a real training scenario. The number of inputs shared depends on the number of parties, trees trained in parallel, samples, attributes, attribute values, labels, and depth of the tree. For example, for 10 parties training 10 trees in parallel, T=100; for 3 parties training 5 trees in parallel, T=15; etc..
-sqm = math.floor(math.sqrt(m))
-S1 = 2 * T * alpha * n * m
-S2 = 4 * T * (2**d - 1) * alpha * sqm * t * n
-S3 = T * (2**d - 1) * n * t
-S4 = T * (2**d - 1) * alpha * sqm * t
-S  = S1 + S2 + S3 + S4
-
-print_ln("Sharing benchmark: S1=%s, S2=%s, S3=%s, S4=%s, S_total=%s",
-         S1, S2, S3, S4, S)
-array_a = types.personal(0, Array(S, types.cfix))
-@for_range_opt(S)
-def _(i):
-    value = cint(42)
-    value_cfix =  types.cfix(value)
-    array_a[i] = value_cfix
-start_timer(5)
-@for_range_opt_multithread(n_threads, S)
-def _(i):
-    array_sa = sfix.Array(S)
-    array_sa[:] = sfix(array_a[:])
-stop_timer(5)
