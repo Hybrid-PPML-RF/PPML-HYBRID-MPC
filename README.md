@@ -1,3 +1,12 @@
+## Automated Running
+Runnign in a single machine can be done as follows:
+```
+git clone <repo>
+chmod +x artifact.sh
+./artifact.sh
+```
+We cannot automate runnig in different machines end-to-end but we provide instructions below:
+
 ## Requirements
 - MP-SPDZ dependencies installed as:
 ```
