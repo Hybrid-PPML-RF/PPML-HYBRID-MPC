@@ -37,11 +37,6 @@ make setup
   Logs per party in logs/party<i>-bench_fhe-<params>-<timestamp>.log
   Look for "Time" lines in party0's log for wall-clock timings.
 
-## Parameters being swept
-  N (vector size) x C (classes) : (16,3), (32,3), (48,2), (64,10)
-  Depth: 4, 5, 6
-  Protocol: sy-shamir, 10 parties, 40-bit security, 282-bit prime
-
 
 ## TLDR
 
