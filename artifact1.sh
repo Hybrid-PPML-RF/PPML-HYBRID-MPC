@@ -79,7 +79,7 @@ step1_build() {
   fi
 
   info "Cloning MP-SPDZ..."
-  git clone https://anonymous.4open.science/r/FHE-PPML-871E/mpc/ "${MP_SPDZ_DIR}"
+  git clone https://github.com/data61/MP-SPDZ.git "${MP_SPDZ_DIR}"
 
   info "Building MP-SPDZ (this takes 5-15 minutes)..."
   cd "${MP_SPDZ_DIR}"
@@ -94,11 +94,27 @@ step1_build() {
 # =============================================================================
 step2_ssl() {
   cd "${MP_SPDZ_DIR}"
+  if [[ -f "Player-Data/P0.pem" ]]; then
+    info "SSL certs already exist, skipping."
+    return
+  fi
   info "Generating SSL certificates for ${N_PARTIES} parties..."
   Scripts/setup-ssl.sh "${N_PARTIES}"
   success "Certificates generated."
 }
 
+# =============================================================================
+#  STEP 3 — Copy the benchmark MPC program into MP-SPDZ
+# =============================================================================
+step3_copy_program() {
+  info "Copying benchmark program from repo..."
+  mkdir -p "${MP_SPDZ_DIR}/Programs/Source"
+
+  cp "${REPO_DIR}/Compiler/SC_fun.py"              "${MP_SPDZ_DIR}/Compiler/SC_fun.py"
+  cp "${REPO_DIR}/Programs/Source/bench_fhe2.py"   "${MP_SPDZ_DIR}/Programs/Source/bench_fhe2.py"
+
+  success "bench_fhe2.py and SC_fun.py copied to ${MP_SPDZ_DIR}."
+}
 
 # =============================================================================
 #  STEP 4 — Compile all configurations
@@ -110,7 +126,7 @@ step4_compile() {
     read -r LABEL N M A T_LABELS <<< "$cfg"
     for D in "${DEPTHS[@]}"; do
       echo -n "  Compiling ${LABEL} d=${D} (n=${N} m=${M} alpha=${A} t=${T_LABELS}) ... "
-      python3 compile.py bench_fhe "$N" "$M" "$A" "$T_LABELS" "$D" \
+      python3 compile.py bench_fhe2 "$N" "$M" "$A" "$T_LABELS" "$D" \
         2>&1 | grep -E "triples|ERROR" | tail -1
       echo "OK"
     done
@@ -123,7 +139,7 @@ step4_compile() {
 # =============================================================================
 run_one() {
   local N=$1 M=$2 A=$3 T_L=$4 D=$5
-  local EXE="bench_fhe-${N}-${M}-${A}-${T_L}-${D}"
+  local EXE="bench_fhe2-${N}-${M}-${A}-${T_L}-${D}"
   local LOG="${MP_SPDZ_DIR}/logs/p0-${EXE}.log"
 
   mkdir -p "${MP_SPDZ_DIR}/logs"
@@ -458,6 +474,7 @@ case "$CMD" in
     step0_deps
     step1_build
     step2_ssl
+    step3_copy_program
     step4_compile
     step5_run
     step6_results
