@@ -81,7 +81,20 @@ ma = alpha * math.ceil(math.sqrt(m)) # number of elements in each vector, which 
 
 print_ln("Compiled with n=%s, m=%s, alpha=%s, t=%s, d=%s", n, m, alpha, t, d)
 
-
+if (d==1):
+    d1 = 100
+if (d==2):
+    d1 = 100
+    d2 = 200
+if (d==3):
+    d1 = 100
+    d2 = 200
+    d3 = 400    
+if (d==4):  
+    d1 = 100
+    d2 = 200
+    d3 = 400
+    d4 = 800
 if (d==5):
     d5 = 1600
 if (d==6):
