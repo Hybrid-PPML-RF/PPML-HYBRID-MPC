@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
 #  ARTIFACT: Hybrid PPML-RF Benchmark
-#  Paper: "Privacy-Preserving Random Forest Training via Hybrid MPC-FHE"
 #
 #  This script reproduces the MPC benchmark results reported in the paper.
 #  It compiles and runs all parameter configurations, then prints the two
